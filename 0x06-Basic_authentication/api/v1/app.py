@@ -30,32 +30,29 @@ def not_found(error) -> str:
 
 @app.errorhandler(401)
 def unauthorized(error) -> str:
-    """ Unauthorized handler
+    """ Request unauthorized
     """
     return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.errorhandler(403)
 def forbidden(error) -> str:
-    """ Forbidden handler
+    """ Request forbidden
     """
     return jsonify({"error": "Forbidden"}), 403
 
 
 @app.before_request
-def before_request() -> None:
+def before_request():
     """ Before request
     """
-    paths = ['/api/v1/status/', '/api/v1/unauthorized/',
-             '/api/v1/forbidden/']
-    if not auth:
-        return None
-    if not auth.require_auth(request.path, paths):
-        return None
-    if not auth.authorization_header(request):
-        abort(401)
-    if not auth.current_user(request):
-        abort(403)
+    if auth and auth.require_auth(request.path, ['/api/v1/status/',
+                                                 '/api/v1/unauthorized/',
+                                                 '/api/v1/forbidden/']):
+        if not auth.authorization_header(request):
+            abort(401)
+        if not auth.current_user(request):
+            abort(403)
 
 
 if __name__ == "__main__":
